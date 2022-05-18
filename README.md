@@ -1,2 +1,2 @@
 # restaurantOrders
-order meal with REST Api
+order meals with REST Api
