@@ -4,7 +4,7 @@ from django.contrib.auth.models import (
     BaseUserManager,
     PermissionsMixin
 )
-# from django.conf import settings FOREIGN KEY USAGE
+# from django.conf import settings FOREIGN KEY
 
 
 class UserManager(BaseUserManager):
@@ -34,6 +34,7 @@ class UserManager(BaseUserManager):
 class User(AbstractBaseUser, PermissionsMixin):
     """Custom user that uses email instead of username"""
     email = models.EmailField(max_length=255, unique=True, null=False)
+    name = models.CharField(max_length=255, unique=True, null=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
 
