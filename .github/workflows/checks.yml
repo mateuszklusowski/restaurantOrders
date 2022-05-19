@@ -16,10 +16,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Test
-        with:
-          env:
-            - name: SECRET_KEY
-              value: ${{ secrets.SECRET_KEY }}
         run: docker-compose run --rm app sh -c "python manage.py test"
+        env:
+          SECRET_KEY: ${{ secrets.SECRET_KEY }} 
       - name: Lint
         run: docker-compose run --rm app sh -c "flake8"
