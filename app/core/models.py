@@ -1,7 +1,3 @@
-import aiohttp
-import asyncio
-from decouple import config
-
 from django.db import models
 from django.contrib.auth.models import (
     AbstractBaseUser,
@@ -36,8 +32,8 @@ class UserManager(BaseUserManager):
 
 class User(AbstractBaseUser, PermissionsMixin):
     """Custom user that uses email instead of username"""
-    email = models.EmailField(max_length=255, unique=True, null=False)
-    name = models.CharField(max_length=255, unique=True, null=True)
+    email = models.EmailField(max_length=255, unique=True, blank=False)
+    name = models.CharField(max_length=255, unique=True, blank=True, null=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
 
@@ -48,7 +44,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 class Cuisine(models.Model):
     """Cuisine model"""
-    name = models.CharField(max_length=255, null=False)
+    name = models.CharField(max_length=255, blank=False)
 
     def __str__(self):
         return self.name
@@ -56,15 +52,15 @@ class Cuisine(models.Model):
 
 class Restaurant(models.Model):
     """Restaurant model"""
-    name = models.CharField(max_length=255, null=False)
-    city = models.CharField(max_length=255, null=False)
-    country = models.CharField(max_length=255, null=False)
-    address = models.CharField(max_length=255, null=False)
-    post_code = models.CharField(max_length=7, null=False)
-    phone = models.CharField(max_length=255, null=False)
+    name = models.CharField(max_length=255, blank=False)
+    city = models.CharField(max_length=255, blank=False)
+    country = models.CharField(max_length=255, blank=False)
+    address = models.CharField(max_length=255, blank=False)
+    post_code = models.CharField(max_length=7, blank=False)
+    phone = models.CharField(max_length=255, blank=False)
     cuisine = models.ForeignKey(Cuisine, on_delete=models.CASCADE)
-    delivery_price = models.DecimalField(max_digits=5, decimal_places=2, null=False)
-    avg_delivery_time = models.PositiveSmallIntegerField(null=False)
+    delivery_price = models.DecimalField(max_digits=5, decimal_places=2, blank=False)
+    avg_delivery_time = models.PositiveSmallIntegerField(blank=False)
 
     def __str__(self):
         return self.name
@@ -72,7 +68,7 @@ class Restaurant(models.Model):
 
 class Tag(models.Model):
     """Tag model"""
-    name = models.CharField(max_length=255, null=False)
+    name = models.CharField(max_length=255, blank=False)
 
     def __str__(self):
         return self.name
@@ -80,7 +76,7 @@ class Tag(models.Model):
 
 class Ingredient(models.Model):
     """Ingredient model"""
-    name = models.CharField(max_length=255, null=False)
+    name = models.CharField(max_length=255, blank=False)
 
     def __str__(self):
         return self.name
@@ -88,19 +84,19 @@ class Ingredient(models.Model):
 
 class Meal(models.Model):
     """Meal model"""
-    name = models.CharField(max_length=255, null=False)
-    price = models.DecimalField(max_digits=5, decimal_places=2, null=False)
+    name = models.CharField(max_length=255, blank=False)
+    price = models.DecimalField(max_digits=5, decimal_places=2, blank=False)
     ingredients = models.ManyToManyField(Ingredient)
     tag = models.ForeignKey(Tag, on_delete=models.CASCADE)
 
     def __str__(self):
-        return f'{self.name}'
+        return self.name
 
 
 class Drink(models.Model):
     """Drink model"""
-    name = models.CharField(max_length=255, null=False)
-    price = models.DecimalField(max_digits=5, decimal_places=2, null=False)
+    name = models.CharField(max_length=255, blank=False)
+    price = models.DecimalField(max_digits=5, decimal_places=2, blank=False)
 
     def __str__(self):
         return self.name
@@ -108,12 +104,12 @@ class Drink(models.Model):
 
 class Menu(models.Model):
     """Menu model"""
-    restaurant_name = models.ForeignKey(Restaurant, on_delete=models.CASCADE)
+    restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE)
     meals = models.ManyToManyField(Meal)
     drinks = models.ManyToManyField(Drink)
 
     def __str__(self):
-        return f'{self.restaurant_name} menu'
+        return f'{self.restaurant.name} menu'
 
 
 class Order(models.Model):
@@ -122,11 +118,11 @@ class Order(models.Model):
     restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE)
     meals = models.ManyToManyField(Meal)
     drinks = models.ManyToManyField(Drink)
-    delivery_address = models.CharField(max_length=255, null=False)
-    delivery_city = models.CharField(max_length=255, null=False)
-    delivery_country = models.CharField(max_length=255, null=False)
-    delivery_post_code = models.CharField(max_length=7, null=False)
-    delivery_phone = models.CharField(max_length=255, null=False)
+    delivery_address = models.CharField(max_length=255, blank=False)
+    delivery_city = models.CharField(max_length=255, blank=False)
+    delivery_country = models.CharField(max_length=255, blank=False)
+    delivery_post_code = models.CharField(max_length=7, blank=False)
+    delivery_phone = models.CharField(max_length=255, blank=False)
     order_time = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -143,4 +139,3 @@ class Order(models.Model):
             total_price += drink.price
 
         return total_price
-            
