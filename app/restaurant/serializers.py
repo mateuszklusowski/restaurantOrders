@@ -35,6 +35,7 @@ class MenuSerializer(serializers.ModelSerializer):
     """Menu serializer"""
     drinks = DrinkSerializer(many=True, read_only=True)
     meals = MealSerializer(many=True, read_only=True)
+
     class Meta:
         model = Menu
         fields = ('meals', 'drinks')
@@ -44,9 +45,13 @@ class MenuSerializer(serializers.ModelSerializer):
 class RestaurantSerializer(serializers.ModelSerializer):
     """Serializer for restaurant model"""
     cuisine = serializers.StringRelatedField()
+
     class Meta:
         model = Restaurant
-        fields = ('id', 'name', 'cuisine', 'delivery_price', 'avg_delivery_time')
+        fields = ('id', 'name', 'cuisine', 'city',
+                  'address', 'phone', 'delivery_price',
+                  'avg_delivery_time'
+                  )
         read_only_fields = ('id',)
 
 
@@ -54,13 +59,12 @@ class RestaurantDetailSerializer(RestaurantSerializer):
     """Serializer for restaurant detail"""
     menu = serializers.SerializerMethodField()
 
-    class Meta:
-        model = Restaurant
+    class Meta(RestaurantSerializer.Meta):
         fields = ('name', 'city', 'country', 'address',
                   'post_code', 'phone', 'cuisine', 'menu',
-                  'delivery_price', 'avg_delivery_time', 
+                  'delivery_price', 'avg_delivery_time',
                   )
-    
+
     def get_menu(self, obj):
         menu = Menu.objects.filter(restaurant=obj)
         return MenuSerializer(menu, many=True).data

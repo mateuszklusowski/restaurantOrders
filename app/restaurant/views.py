@@ -17,13 +17,16 @@ class RestaurantViewSet(viewsets.GenericViewSet,
     def get_queryset(self):
         """Return restaurant with given cuisine or name"""
         queryset = self.queryset
-        cuisine = self.request.query_params.get('cuisine', None)
-        name = self.request.query_params.get('name', None)
+        cuisine = str(self.request.query_params.get('cuisine', '')).title()
+        name = str(self.request.query_params.get('name', '')).title()
+        city = str(self.request.query_params.get('city', '')).title()
 
-        if cuisine is not None:
+        if cuisine != '':
             queryset = queryset.filter(cuisine__name=cuisine)
-        if name is not None:
+        if name != '':
             queryset = queryset.filter(name=name)
+        if city != '':
+            queryset = queryset.filter(city=city)
 
         return queryset
 
