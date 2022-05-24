@@ -53,7 +53,7 @@ class RestaurantSerializer(serializers.ModelSerializer):
                   'avg_delivery_time'
                   )
         read_only_fields = ('id',)
-    
+
 
 class RestaurantDetailSerializer(RestaurantSerializer):
     """Serializer for restaurant detail"""

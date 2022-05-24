@@ -1,8 +1,6 @@
 from rest_framework import viewsets, mixins
 from rest_framework.permissions import AllowAny
 
-from django_filters.rest_framework import DjangoFilterBackend
-
 from .serializers import RestaurantSerializer, RestaurantDetailSerializer
 
 from core.models import Restaurant
@@ -15,8 +13,20 @@ class RestaurantViewSet(viewsets.GenericViewSet,
     serializer_class = RestaurantSerializer
     permission_classers = (AllowAny,)
     queryset = Restaurant.objects.all()
-    filter_backends = (DjangoFilterBackend,)
-    filterset_fields = ('city', 'cuisine')
+
+    def get_queryset(self):
+        """Return filetered queryset"""
+        queryset = self.queryset
+        cuisine = str(self.request.query_params.get('cuisine', '')).title()
+        city = str(self.request.query_params.get('city', '')).title()
+
+        if city != '':
+            queryset = queryset.filter(city=city)
+
+        if cuisine != '':
+            queryset = queryset.filter(cuisine__name=cuisine)
+
+        return queryset
 
     def get_serializer_class(self):
         """Return appropriate serializer class"""

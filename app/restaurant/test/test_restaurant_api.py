@@ -63,21 +63,6 @@ class GetRestaurantListTest(TestCase):
         serializer = RestaurantDetailSerializer(restaurant)
         self.assertEqual(res.data, serializer.data)
 
-    def test_search_by_name(self):
-        """Test restaurant filtering by name"""
-        restaurant = sample_restaurant(name='Restaurant1')
-        restaurant2 = sample_restaurant(name='Restaurant2')
-
-        payload = {"name": "restaurant1"}
-
-        res = self.client.get(RESTAURANTS_URL, payload)
-        serializer = RestaurantSerializer(restaurant)
-        serializer2 = RestaurantSerializer(restaurant2)
-
-        self.assertEqual(res.status_code, status.HTTP_200_OK)
-        self.assertIn(serializer.data, res.data)
-        self.assertNotIn(serializer2.data, res.data)
-
     def test_search_by_cuisine(self):
         """Test restaurant filtering by cuisine"""
         cuisine1 = sample_cuisine('Indian')
@@ -88,7 +73,7 @@ class GetRestaurantListTest(TestCase):
         restaurant2 = sample_restaurant(name='restaurant2')
         restaurant2.cuisine = cuisine2
 
-        payload = {'cuisine': 'indian'}
+        payload = {'cuisine': 'Indian'}
         res = self.client.get(RESTAURANTS_URL, payload)
 
         serializer = RestaurantSerializer(restaurant)
@@ -105,7 +90,7 @@ class GetRestaurantListTest(TestCase):
         restaurant.save()
         restaurant2 = sample_restaurant(name='restaurant2')
 
-        payload = {'city': 'poznan'}
+        payload = {'city': 'Poznan'}
         res = self.client.get(RESTAURANTS_URL, payload)
 
         serializer = RestaurantSerializer(restaurant)
