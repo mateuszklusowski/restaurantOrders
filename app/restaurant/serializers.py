@@ -25,6 +25,7 @@ class MealSerializer(serializers.ModelSerializer):
     """Meal serializer"""
     ingredients = IngredientSerializer(many=True, read_only=True)
     tag = serializers.StringRelatedField()
+
     class Meta:
         model = Meal
         fields = ('name', 'tag', 'ingredients', 'price')
