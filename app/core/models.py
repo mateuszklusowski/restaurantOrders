@@ -132,6 +132,7 @@ class Order(models.Model):
     def get_total_price(self):
         """Return total price of order"""
         total_price = 0
+        total_price += self.restaurant.delivery_price
 
         for meal in self.meals.all():
             total_price += meal.price
