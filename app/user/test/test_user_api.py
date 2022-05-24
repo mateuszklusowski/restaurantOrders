@@ -1,17 +1,17 @@
 from django.test import TestCase
 from django.urls import reverse
-from django.contrib.auth import get_model_user
+from django.contrib.auth import get_user_model
 
 from rest_framework.test import APIClient
 from rest_framework import status
 
 CREATE_USER_URL = reverse('user:create')
-TOKEN_URL = reverse('user:token')
-ME_URL = reverse('user:me')
+TOKEN_URL = reverse('user:create_token')
+ME_URL = reverse('user:user_detail')
 
 
 def create_user(**params):
-    return get_model_user().objects.create_user(**params)
+    return get_user_model().objects.create_user(**params)
 
 
 class PublicUserApiTests(TestCase):
@@ -30,7 +30,7 @@ class PublicUserApiTests(TestCase):
         res = self.client.post(CREATE_USER_URL, payload)
 
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
-        user = get_model_user().objects.get(**res.data)
+        user = get_user_model().objects.get(**res.data)
         self.assertTrue(user.check_password(payload['password']))
         self.assertNotIn('password', res.data)
 
@@ -55,7 +55,7 @@ class PublicUserApiTests(TestCase):
         }
         res = self.client.post(CREATE_USER_URL, payload)
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
-        user_exists = get_model_user().objects.filter(
+        user_exists = get_user_model().objects.filter(
             email=payload['email']
         ).exists()
         self.assertFalse(user_exists)
@@ -86,7 +86,7 @@ class PublicUserApiTests(TestCase):
 
     def test_create_token_missing_field(self):
         """Test that token is not created if email and password are missing"""
-        res = self.client.post(TOKEN_URL), {'email': 'some', 'password': ''}
+        res = self.client.post(TOKEN_URL, {'email': 'some', 'password': ''})
         self.assertNotIn('token', res.data)
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
