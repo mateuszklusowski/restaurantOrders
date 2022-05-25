@@ -216,4 +216,4 @@ class ModelTests(TestCase):
         self.assertIn(meal2, order.meals.all())
         self.assertIn(drink1, order.drinks.all())
         self.assertIn(drink2, order.drinks.all())
-        self.assertEqual(order.get_total_price, 32.00)
+        self.assertEqual(order.get_total_price, 39.50)

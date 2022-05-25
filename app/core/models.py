@@ -5,6 +5,8 @@ from django.contrib.auth.models import (
     PermissionsMixin
 )
 
+from decimal import Decimal
+
 
 class UserManager(BaseUserManager):
     """Create and save a new user and superuser"""
@@ -88,6 +90,7 @@ class Meal(models.Model):
     price = models.DecimalField(max_digits=5, decimal_places=2, blank=False)
     ingredients = models.ManyToManyField(Ingredient)
     tag = models.ForeignKey(Tag, on_delete=models.CASCADE)
+    
 
     def __str__(self):
         return self.name
@@ -131,12 +134,12 @@ class Order(models.Model):
     @property
     def get_total_price(self):
         """Return total price of order"""
-        total_price = 0
-        total_price += self.restaurant.delivery_price
+        total_price = Decimal(0)
+        total_price += Decimal(self.restaurant.delivery_price)
 
         for meal in self.meals.all():
-            total_price += meal.price
+            total_price += Decimal(meal.price)
         for drink in self.drinks.all():
-            total_price += drink.price
+            total_price += Decimal(drink.price)
 
         return total_price
