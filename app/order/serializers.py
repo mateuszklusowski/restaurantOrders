@@ -34,3 +34,10 @@ class OrderDetailSerializer(OrderSerializer):
 
     class Meta(OrderSerializer.Meta):
         fields = '__all__'
+
+
+class OrderCreateSerializer(serializers.ModelSerializer):
+    """Order create serializer"""
+    class Meta:
+        model = Order
+        exclude = ('order_time',)

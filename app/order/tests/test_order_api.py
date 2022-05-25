@@ -9,6 +9,7 @@ from order import serializers as order_serializers
 from core.models import Order, Tag, Meal, Drink, Ingredient, Restaurant, Cuisine
 
 ORDERS_URL = reverse('order:order-list')
+ORDER_CREATE_URL = reverse('order:order-create')
 
 
 def detail_url(order_id):
@@ -77,8 +78,8 @@ def sample_order(**params):
     meals = params['meals']
     drinks = params['drinks']
 
-    params.pop('drinks', None)
-    params.pop('meals', None)
+    params.pop('drinks')
+    params.pop('meals')
     default.update(**params)
 
     order = Order.objects.create(**default)
@@ -160,3 +161,57 @@ class PrivateOrderApiTests(TestCase):
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(len(res.data), 1)
         self.assertEqual(res.data, serializer.data)
+
+    def test_retrieve_detail_order(self):
+        """Test retrieving detail order"""
+        order1 = sample_order(
+            user=self.user,
+            meals=[sample_meal(name='meal1'), sample_meal(name='meal2')],
+            drinks=[sample_drink(name='drink1'), sample_drink(name='drink2')]
+        )
+        order2 = sample_order(
+            user=self.user,
+            meals=[sample_meal(name='meal3', price=20.00), sample_meal(name='meal4')],
+            drinks=[sample_drink(name='drink1'), sample_drink(name='drink2')]
+        )
+
+        url = detail_url(order1.id)
+        res = self.client.get(url)
+
+        serializer1 = order_serializers.OrderDetailSerializer(order1)
+        serializer2 = order_serializers.OrderDetailSerializer(order2)
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(res.data, serializer1.data)
+        self.assertNotEqual(res.data, serializer2.data)
+
+    def test_create_order(self):
+        """Test create an order"""
+
+        payload = {
+            'user': self.user.id,
+            'restaurant': sample_restaurant('restaurant1').id,
+            'meals': [sample_meal(name='meal1').id, sample_meal(name='meal2').id],
+            'drinks': [sample_drink(name='drink1').id, sample_drink(name='drink2').id],
+            'delivery_address': 'some address',
+            'delivery_city': 'some city',
+            'delivery_country': 'some country',
+            'delivery_post_code': '01-223',
+            'delivery_phone': 'some phone'
+        }
+
+        res = self.client.post(ORDER_CREATE_URL, payload)
+
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        order = Order.objects.get(id=res.data['id'])
+        ids_key = ['user', 'restaurant', 'meals', 'drinks']
+        for key in payload.keys():
+            if key in ids_key:
+                if key == 'meals' or key=='drinks':
+                    for index in payload[key]:
+                        self.assertIn(getattr(order, key).filter(id=index)[0].id, payload[key])
+                else:    
+                    self.assertEqual(payload[key], getattr(order, key).id)
+            else:
+                self.assertEqual(payload[key], getattr(order, key))
+        
