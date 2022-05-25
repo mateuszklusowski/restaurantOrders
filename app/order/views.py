@@ -14,10 +14,7 @@ class OrderListView(generics.ListAPIView):
 
     def get_queryset(self):
         """Return order for logged user"""
-        queryset = Order.objects.all()
-        queryset.filter(user=self.request.user)
-
-        return queryset
+        return Order.objects.filter(user=self.request.user)
 
     
 class OrderDetailView(generics.RetrieveAPIView):
@@ -28,7 +25,4 @@ class OrderDetailView(generics.RetrieveAPIView):
 
     def get_queryset(self):
         """Return order for logged user"""
-        queryset = Order.objects.all()
-        queryset.filter(user=self.request.user)
-
-        return queryset
+        return Order.objects.filter(user=self.request.user)
