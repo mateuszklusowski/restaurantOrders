@@ -215,3 +215,21 @@ class PrivateOrderApiTests(TestCase):
             else:
                 self.assertEqual(payload[key], getattr(order, key))
         
+    def test_create_invalid_order(self):
+        """Test creating invalid order"""
+        
+        payload = {
+            'user': '',
+            'restaurant': sample_restaurant('restaurant1').id,
+            'meals': [sample_meal(name='meal1').id, sample_meal(name='meal2').id],
+            'drinks': [sample_drink(name='drink1').id, sample_drink(name='drink2').id],
+            'delivery_address': 'some address',
+            'delivery_city': 'some city',
+            'delivery_country': 'some country',
+            'delivery_post_code': '01-223',
+            'delivery_phone': 'some phone'
+        }
+
+        res = self.client.post(ORDER_CREATE_URL, payload)
+
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
