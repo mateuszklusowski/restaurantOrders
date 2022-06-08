@@ -90,7 +90,6 @@ class Meal(models.Model):
     price = models.DecimalField(max_digits=5, decimal_places=2, blank=False)
     ingredients = models.ManyToManyField(Ingredient)
     tag = models.ForeignKey(Tag, on_delete=models.CASCADE)
-    
 
     def __str__(self):
         return self.name
