@@ -38,6 +38,7 @@ class OrderDetailSerializer(OrderSerializer):
 
 class OrderCreateSerializer(serializers.ModelSerializer):
     """Order create serializer"""
+    
     class Meta:
         model = Order
-        exclude = ('order_time',)
+        exclude = ('order_time', 'user')
