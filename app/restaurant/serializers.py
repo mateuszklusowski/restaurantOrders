@@ -23,13 +23,16 @@ class IngredientSerializer(serializers.ModelSerializer):
 
 class MealSerializer(serializers.ModelSerializer):
     """Meal serializer"""
-    ingredients = IngredientSerializer(many=True, read_only=True)
+    ingredients = serializers.SerializerMethodField()
     tag = serializers.StringRelatedField()
 
     class Meta:
         model = Meal
-        fields = ('name', 'tag', 'ingredients', 'price')
+        fields = ('id','name', 'tag', 'ingredients', 'price')
         read_only_fields = ('name', 'ingredients', 'price')
+
+    def get_ingredients(self, obj):
+        return obj.ingredients.values_list('name', flat=True)
 
 
 class MenuSerializer(serializers.ModelSerializer):
