@@ -13,6 +13,7 @@ class RestaurantViewSet(viewsets.GenericViewSet,
     serializer_class = RestaurantSerializer
     permission_classers = (AllowAny,)
     queryset = Restaurant.objects.all()
+    lookup_field = 'slug'
 
     def get_queryset(self):
         """Return filetered queryset"""
