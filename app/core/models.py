@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils.text import slugify
 from django.contrib.auth.models import (
     AbstractBaseUser,
     BaseUserManager,
@@ -55,6 +56,7 @@ class Cuisine(models.Model):
 class Restaurant(models.Model):
     """Restaurant model"""
     name = models.CharField(max_length=255, blank=False)
+    slug = models.SlugField(max_length=255, blank=True)
     city = models.CharField(max_length=255, blank=False)
     country = models.CharField(max_length=255, blank=False)
     address = models.CharField(max_length=255, blank=False)
@@ -67,6 +69,10 @@ class Restaurant(models.Model):
     def __str__(self):
         return self.name
 
+    def save(self, *args, **kwargs):
+        self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
+    
 
 class Tag(models.Model):
     """Tag model"""
