@@ -28,7 +28,7 @@ class MealSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Meal
-        fields = ('id','name', 'tag', 'ingredients', 'price')
+        fields = ('id', 'name', 'tag', 'ingredients', 'price')
         read_only_fields = ('name', 'ingredients', 'price')
 
     def get_ingredients(self, obj):
@@ -68,6 +68,7 @@ class RestaurantDetailSerializer(RestaurantSerializer):
                   'post_code', 'phone', 'cuisine', 'menu',
                   'delivery_price', 'avg_delivery_time',
                   )
+        lookup_field = 'slug'
 
     def get_menu(self, obj):
         menu = Menu.objects.filter(restaurant=obj)
