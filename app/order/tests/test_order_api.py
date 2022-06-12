@@ -207,17 +207,17 @@ class PrivateOrderApiTests(TestCase):
         ids_key = ['user', 'restaurant', 'meals', 'drinks']
         for key in payload.keys():
             if key in ids_key:
-                if key == 'meals' or key=='drinks':
+                if key == 'meals' or key == 'drinks':
                     for index in payload[key]:
                         self.assertIn(getattr(order, key).filter(id=index)[0].id, payload[key])
-                else:    
+                else:
                     self.assertEqual(payload[key], getattr(order, key).id)
             else:
                 self.assertEqual(payload[key], getattr(order, key))
-        
+
     def test_create_invalid_order(self):
         """Test creating invalid order"""
-        
+
         payload = {
             'user': '',
             'restaurant': sample_restaurant('restaurant1').id,

@@ -30,15 +30,15 @@ class OrderDetailSerializer(OrderSerializer):
     """Order detail serializer"""
     meals = OrderMealSerializer(many=True, read_only=True)
     drinks = DrinkSerializer(many=True, read_only=True)
-    user = serializers.StringRelatedField()
 
-    class Meta(OrderSerializer.Meta):
-        fields = '__all__'
-
+    class Meta:
+        model = Order
+        exclude = ('user',)
+        
 
 class OrderCreateSerializer(serializers.ModelSerializer):
     """Order create serializer"""
-    
+
     class Meta:
         model = Order
         exclude = ('order_time', 'user')

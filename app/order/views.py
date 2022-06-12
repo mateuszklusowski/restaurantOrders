@@ -5,7 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from .serializers import (OrderSerializer,
                           OrderDetailSerializer,
                           OrderCreateSerializer
-                        )
+                          )
 from core.models import Order
 
 
@@ -19,7 +19,7 @@ class OrderListView(generics.ListAPIView):
         """Return order for logged user"""
         return Order.objects.filter(user=self.request.user)
 
-    
+
 class OrderDetailView(generics.RetrieveAPIView):
     """Order detail view"""
     serializer_class = OrderDetailSerializer
@@ -29,6 +29,7 @@ class OrderDetailView(generics.RetrieveAPIView):
     def get_queryset(self):
         """Return order for logged user"""
         return Order.objects.filter(user=self.request.user)
+
 
 class OrderCreateView(generics.CreateAPIView):
     """Order create view"""
