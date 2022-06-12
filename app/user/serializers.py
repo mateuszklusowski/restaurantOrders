@@ -14,23 +14,22 @@ class UserSerializer(serializers.ModelSerializer):
             'password': {'write_only': True, 'min_length': 5}
             }
             
-
     def create(self, validated_data):
         """Create a new user with encrypted password and return it"""
         
         return get_user_model().objects.create_user(**validated_data)
 
-    def update(self, instance, validated_data):
-        """Update a user, setting the password correctly and return it"""
-        password = validated_data.pop('password', None)
-        validated_data.pop('email', None) #cannot change email
-        user = super().update(instance, validated_data)
+    # def update(self, instance, validated_data):
+    #     """Update a user, setting the password correctly and return it"""
+    #     password = validated_data.pop('password', None)
+    #     validated_data.pop('email', None) #cannot change email
+    #     user = super().update(instance, validated_data)
 
-        if password:
-            user.set_password(password)
-            user.save()
+    #     if password:
+    #         user.set_password(password)
+    #         user.save()
 
-        return user
+    #     return user
 
 
 class AuthTokenSerializer(serializers.Serializer):
@@ -58,3 +57,31 @@ class AuthTokenSerializer(serializers.Serializer):
 
         attrs['user'] = user
         return attrs
+
+
+class UserPasswordUpdateSerializer(serializers.Serializer):
+    """Serializer for updating user password"""
+    old_password = serializers.CharField(
+        style={'input_type': 'password'},
+        required=True
+        )
+    new_password = serializers.CharField(
+        style={'input_type': 'password'},
+        required=True
+        )
+
+    class Meta:
+        model = get_user_model()
+        extra_kwargs = {
+            'old_password': {'write_only': True, 'min_length': 5},
+            'new_password': {'write_only': True, 'min_length': 5}
+            }
+
+    def validate(self, data):
+        """Check that old password is correct"""
+        user = self.context.get('request').user
+        is_different = bool(data['new_password'] != data['old_password'])
+        if not user.check_password(data['old_password']) or not is_different:
+            msg = _('Old password is incorrect or similar to new one')
+            raise serializers.ValidationError(msg, code='password')
+        return data
