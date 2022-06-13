@@ -8,6 +8,7 @@ from rest_framework import status
 CREATE_USER_URL = reverse('user:create')
 TOKEN_URL = reverse('user:create-token')
 ME_URL = reverse('user:user-detail')
+PASSWORD_CHANGE = reverse('user:change-password')
 
 
 def create_user(**params):
@@ -124,13 +125,40 @@ class PrivateUserApiTests(TestCase):
         res = self.client.post(ME_URL, {})
         self.assertEqual(res.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
-    def test_update_user_profile(self):
-        """Test updating the user profile for authenticated user"""
-        payload = {'name': 'new name', 'password': 'newpassword123'}
-
-        res = self.client.patch(ME_URL, payload)
+    def test_change_password(self):
+        """Test changing the password for authenticated user"""
+        payload = {
+            'old_password': 'testpassword',
+            'new_password': 'newpassword123'
+        }
+        res = self.client.patch(PASSWORD_CHANGE, payload)
 
         self.user.refresh_from_db()
-        self.assertEqual(self.user.name, payload['name'])
-        self.assertTrue(self.user.check_password(payload['password']))
         self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertTrue(self.user.check_password(payload['new_password']))
+
+    def test_change_password_with_wrong_old_password(self):
+        """Test that password is not changed if the old password is wrong"""
+        payload = {
+            'old_password': 'wrongpassword',
+            'new_password': 'newpassword123'
+        }
+
+        res = self.client.patch(PASSWORD_CHANGE, payload)
+
+        self.user.refresh_from_db()
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertTrue(self.user.check_password('testpassword'))
+
+    def test_change_password_with_similar_new_password(self):
+        """Test that password is not changed if the new password is similar"""
+        payload = {
+            'old_password': 'testpassword',
+            'new_password': 'testpassword'
+        }
+
+        res = self.client.patch(PASSWORD_CHANGE, payload)
+
+        self.user.refresh_from_db()
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertTrue(self.user.check_password('testpassword'))
