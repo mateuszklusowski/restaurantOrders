@@ -72,7 +72,7 @@ class Restaurant(models.Model):
     def save(self, *args, **kwargs):
         self.slug = slugify(self.name)
         super().save(*args, **kwargs)
-    
+
 
 class Tag(models.Model):
     """Tag model"""
