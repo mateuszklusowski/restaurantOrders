@@ -73,6 +73,7 @@ class PasswordResetRequestView(generics.GenericAPIView):
     serializer_class = PasswordResetRequestSerializer
 
     def post(self, request):
+        request.session.set_expiry(int(timedelta(days=1).total_seconds()))  # Expire after 1 day
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             return Response(
@@ -88,7 +89,6 @@ class PasswordResetConfirmView(generics.GenericAPIView):
 
     def get(self, request, uidb64, token):
         """Tell user that password reset link is available"""
-        request.session.set_expiry(int(timedelta(days=1).total_seconds()))  # Expire after 1 day
 
         user_id = force_str(urlsafe_base64_decode(uidb64))
         user = get_user_model().objects.get(pk=user_id)
