@@ -109,7 +109,7 @@ class PasswordResetRequestSerializer(serializers.Serializer):
             )
         else:
             msg = _('No user with this email address exists')
-            raise serializers.ValidationError(msg, code='email')
+            raise serializers.ValidationError({'email error': msg}, code='email')
 
         return attrs
 
