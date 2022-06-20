@@ -57,7 +57,7 @@ class GetRestaurantListTest(TestCase):
         """Test viewing a restaurant detail"""
         restaurant = sample_restaurant('restaurant2')
 
-        url = detail_url(restaurant.id)
+        url = detail_url(restaurant.slug)
 
         res = self.client.get(url)
         serializer = RestaurantDetailSerializer(restaurant)
