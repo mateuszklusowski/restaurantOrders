@@ -71,7 +71,7 @@ def sample_order(**params):
         'order_time': '2019-01-01 00:00:00',
         'delivery_address': 'some address',
         'delivery_city': 'some city',
-        'delivery_post_code': 'some post code',
+        'delivery_post_code': '01-100',
         'delivery_phone': 'some phone',
         'delivery_phone': 'some phone'
     }
