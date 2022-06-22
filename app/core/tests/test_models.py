@@ -83,7 +83,7 @@ class ModelTests(TestCase):
         city = 'London'
         country = 'UK'
         address = 'test address'
-        post_code = 'test post_code'
+        post_code = '01-100'
         phone = 'test phone'
         cuisine = models.Cuisine.objects.create(
             name='Japanese'
