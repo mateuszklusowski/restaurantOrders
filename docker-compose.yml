@@ -2,6 +2,7 @@ version: "3.8"
 
 services:
   app:
+    container_name: restaurant_app
     build:
       context: .
       args:
@@ -14,4 +15,40 @@ services:
       sh -c "python3 manage.py wait_for_db &&
              python3 manage.py makemigrations &&
              python3 manage.py migrate &&
-             python3 manage.py runserver 0.0.0.0:8000"
+             python3 manage.py runserver 0.0.0.0:8000 &&
+             python3 manage.py runmailer"
+    environment:
+      - DB_HOST=db
+      - DB_NAME=restaurantapp_db
+      - DB_USER=postgresmk
+      - DB_PASSWORD=RestaurantAppMk
+    depends_on:
+      - db
+      - redis
+
+  celery:
+    build:
+      context: .
+      args:
+        - DEV=true
+    command: celery -A app worker --loglevel=INFO
+    environment:
+      - CELERY_BROKER=redis://redis:6379/0
+      - CELERY_BACKEND=redis://redis:6379/0
+    volumes:
+      - ./app:/app
+    depends_on:
+      - app
+      - redis
+
+  db:
+    image: postgres:14-alpine
+    container_name: pgdb-restaurant
+    environment:
+      - POSTGRES_DB=restaurantapp_db
+      - POSTGRES_USER=postgresmk
+      - POSTGRES_PASSWORD=RestaurantAppMk
+      
+  redis:
+    image: "redis:alpine"
+

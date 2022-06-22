@@ -3,12 +3,12 @@ from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.utils.encoding import force_str, smart_bytes
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
-from django.core.mail import send_mail
 from django.contrib.sites.shortcuts import get_current_site
 from django.urls import reverse
-from django.conf import settings
 
 from rest_framework import serializers
+
+from .tasks import send_reset_password_email
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -101,11 +101,10 @@ class PasswordResetRequestSerializer(serializers.Serializer):
             relative_url = reverse('user:reset-password-confirm', kwargs={'uidb64': uidb64, 'token': token})
             absolute_url = 'http://{}{}'.format(current_site, relative_url)
             email_message = 'Here is your password reset link:\n{}'.format(absolute_url)
-            send_mail(
-                subject='Reset your password',
-                message=email_message,
-                from_email=settings.EMAIL_HOST_USER,
-                recipient_list=[user.email]
+            send_reset_password_email(
+                'Password reset link',
+                email_message,
+                user.email
             )
         else:
             msg = _('No user with this email address exists')
