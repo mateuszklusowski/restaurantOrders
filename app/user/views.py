@@ -73,7 +73,6 @@ class PasswordResetRequestView(generics.GenericAPIView):
     serializer_class = PasswordResetRequestSerializer
 
     def post(self, request):
-        request.session.set_expiry(int(timedelta(days=1).total_seconds()))  # Expire after 1 day
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             return Response(
