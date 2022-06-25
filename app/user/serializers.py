@@ -101,11 +101,12 @@ class PasswordResetRequestSerializer(serializers.Serializer):
             relative_url = reverse('user:reset-password-confirm', kwargs={'uidb64': uidb64, 'token': token})
             absolute_url = 'http://{}{}'.format(current_site, relative_url)
             email_message = 'Here is your password reset link:\n{}'.format(absolute_url)
-            send_reset_password_email(
+            send_reset_password_email.delay(
                 'Password reset link',
                 email_message,
                 user.email
             )
+            
         else:
             msg = _('No user with this email address exists')
             raise serializers.ValidationError({'email error': msg}, code='email')

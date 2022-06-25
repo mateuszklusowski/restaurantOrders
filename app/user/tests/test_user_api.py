@@ -4,11 +4,16 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.utils.encoding import smart_bytes
 from django.utils.http import urlsafe_base64_encode
+from django.core import mail
 
 from rest_framework.test import APIClient
 from rest_framework import status
 
+from user.tasks import send_reset_password_email
+
 from datetime import timedelta
+
+from time import sleep
 
 CREATE_USER_URL = reverse('user:create')
 TOKEN_URL = reverse('user:create-token')
@@ -169,15 +174,17 @@ class PrivateUserApiTests(TestCase):
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertTrue(self.user.check_password('testpassword'))
 
-    def test_reset_password_request(self):
+    def test_reset_password_sending_mail(self):
         """Test requesting a password reset"""
         payload = {'email': self.user.email}
 
-        res = self.client.post(PASSWORD_RESET_URL, payload)
-
-        self.assertEqual(res.status_code, status.HTTP_200_OK)
-        self.assertIn('success', res.data)
-
+        res = send_reset_password_email.delay(
+            'test subject',
+            'test body',
+            'test@test.com'
+        )
+        sleep(10)
+        self.assertEqual(res.status, 'SUCCESS')
     def test_reset_password_request_with_invalid_email(self):
         """Test requesting a password reset with invalid email"""
         payload = {'email': ''}
@@ -217,12 +224,3 @@ class PrivateUserApiTests(TestCase):
         self.user.refresh_from_db()
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertFalse(self.user.check_password(payload['new_password1']))
-
-    def test_set_new_password_token_expires_age(self):
-        """Test that token expires after one day"""
-        payload = {'email': self.user.email}
-
-        self.client.post(PASSWORD_RESET_URL, payload)
-        res = self.client.session.get_expiry_age()
-
-        self.assertEqual(res, int(timedelta(days=1).total_seconds()))
