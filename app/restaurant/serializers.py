@@ -66,5 +66,5 @@ class RestaurantDetailSerializer(RestaurantSerializer):
         lookup_field = 'slug'
 
     def get_menu(self, obj):
-        menu = Menu.objects.filter(restaurant=obj).distinct()
-        return MenuSerializer(menu, many=True).data
+        menu = Menu.objects.get(restaurant=obj)
+        return MenuSerializer(menu, many=False).data
