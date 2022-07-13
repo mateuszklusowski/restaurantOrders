@@ -8,9 +8,7 @@ class DrinkSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Drink
-        fields = ('name', 'price')
-        read_only_fields = ('name', 'price')
-
+        fields = ('id', 'name', 'price')
 
 class IngredientSerializer(serializers.ModelSerializer):
     """Ingredient serializer"""
@@ -18,7 +16,6 @@ class IngredientSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ingredient
         fields = ('name',)
-        read_only_fields = ('name',)
 
 
 class MealSerializer(serializers.ModelSerializer):
@@ -29,7 +26,6 @@ class MealSerializer(serializers.ModelSerializer):
     class Meta:
         model = Meal
         fields = ('id', 'name', 'tag', 'ingredients', 'price')
-        read_only_fields = ('name', 'ingredients', 'price')
 
     def get_ingredients(self, obj):
         return obj.ingredients.values_list('name', flat=True)
@@ -43,7 +39,6 @@ class MenuSerializer(serializers.ModelSerializer):
     class Meta:
         model = Menu
         fields = ('meals', 'drinks')
-        read_only_fields = ('restaurant', 'meals', 'drinks')
 
 
 class RestaurantSerializer(serializers.ModelSerializer):
@@ -52,11 +47,10 @@ class RestaurantSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Restaurant
-        fields = ('id', 'name', 'cuisine', 'city',
+        fields = ('id', 'slug', 'name', 'cuisine', 'city',
                   'address', 'phone', 'delivery_price',
                   'avg_delivery_time'
                   )
-        read_only_fields = ('id',)
 
 
 class RestaurantDetailSerializer(RestaurantSerializer):
@@ -64,12 +58,12 @@ class RestaurantDetailSerializer(RestaurantSerializer):
     menu = serializers.SerializerMethodField()
 
     class Meta(RestaurantSerializer.Meta):
-        fields = ('name', 'city', 'country', 'address',
+        fields = ('id', 'name', 'city', 'country', 'address',
                   'post_code', 'phone', 'cuisine', 'menu',
                   'delivery_price', 'avg_delivery_time',
                   )
         lookup_field = 'slug'
 
     def get_menu(self, obj):
-        menu = Menu.objects.filter(restaurant=obj)
+        menu = Menu.objects.get(restaurant=obj)
         return MenuSerializer(menu, many=True).data
