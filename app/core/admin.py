@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import User
+from .models import User, Order
 from django.apps import apps
 from django.utils.translation import gettext as _
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
@@ -26,6 +26,13 @@ class UserAdmin(BaseUserAdmin):
 
 
 admin.site.register(User, UserAdmin)
+
+
+@admin.register(Order)
+class OrderAdmin(admin.ModelAdmin):
+    readonly_fields = ('order_time',)
+
+
 for model in apps.get_models():
     try:
         admin.site.register(model)
