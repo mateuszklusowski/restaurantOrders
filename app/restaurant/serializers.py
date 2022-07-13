@@ -10,6 +10,7 @@ class DrinkSerializer(serializers.ModelSerializer):
         model = Drink
         fields = ('id', 'name', 'price')
 
+
 class IngredientSerializer(serializers.ModelSerializer):
     """Ingredient serializer"""
 

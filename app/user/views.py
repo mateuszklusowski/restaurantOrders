@@ -8,8 +8,6 @@ from django.utils.encoding import force_str
 from django.contrib.auth import get_user_model
 from django.utils.http import urlsafe_base64_decode
 
-from datetime import timedelta
-
 from .serializers import (UserSerializer,
                           AuthTokenSerializer,
                           UserPasswordUpdateSerializer,

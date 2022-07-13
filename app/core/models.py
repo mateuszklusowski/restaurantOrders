@@ -138,7 +138,7 @@ class Order(models.Model):
         return f'Order: {self.user}-{self.id} from {self.restaurant}'
 
     def save(self, *args, **kwargs):
-        
+
         self.total_price += Decimal(self.restaurant.delivery_price)
         super().save(*args, **kwargs)
 
@@ -164,6 +164,6 @@ class OrderMeal(models.Model):
     @property
     def get_total_meal_price(self):
         return Decimal(self.meal.price * self.quantity)
-    
+
     def __str__(self):
         return f'Order id: {self.order.id}, meal: {self.meal.name}'

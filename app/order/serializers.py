@@ -4,7 +4,7 @@ from django.utils.translation import gettext_lazy as _
 
 from decimal import Decimal
 
-from core.models import Order, OrderMeal, OrderDrink, Restaurant, Menu
+from core.models import Order, OrderMeal, OrderDrink, Menu
 
 
 class OrderMealSerializer(serializers.ModelSerializer):
@@ -26,6 +26,7 @@ class OrderDrinkSerializer(serializers.ModelSerializer):
     """Drink serializer for order"""
     total_price = serializers.DecimalField(max_digits=5, decimal_places=2, source='get_total_drink_price', read_only=True)
     price = serializers.DecimalField(max_digits=5, decimal_places=2, source='drink.price', read_only=True)
+
     class Meta:
         model = OrderDrink
         fields = ('drink', 'quantity', 'price', 'total_price')
@@ -53,10 +54,10 @@ class OrderSerializer(serializers.ModelSerializer):
             'delivery_address',
             'delivery_city',
             'delivery_phone',
-            'order_time'  
+            'order_time'
         )
 
-        
+
 class OrderDetailSerializer(OrderSerializer):
     """Order detail serializer"""
     meals = serializers.SerializerMethodField()
@@ -72,7 +73,7 @@ class OrderDetailSerializer(OrderSerializer):
             'delivery_address',
             'delivery_city',
             'delivery_phone',
-            'order_time'  
+            'order_time'
         )
 
     def get_meals(self, obj):
@@ -90,20 +91,20 @@ class OrderCreateSerializer(serializers.ModelSerializer):
     drinks = OrderDrinkSerializer(many=True, write_only=True)
     order_time = serializers.DateTimeField(format='%Y-%m-%d %H:%m', read_only=True)
     total_price = serializers.DecimalField(max_digits=5, decimal_places=2, read_only=True)
-    
+
     class Meta:
         model = Order
         fields = (
-        'restaurant',
-        'meals',
-        'drinks',
-        'delivery_city',
-        'delivery_address',
-        'delivery_country',
-        'delivery_post_code',
-        'delivery_phone',
-        'total_price',
-        'order_time'
+            'restaurant',
+            'meals',
+            'drinks',
+            'delivery_city',
+            'delivery_address',
+            'delivery_country',
+            'delivery_post_code',
+            'delivery_phone',
+            'total_price',
+            'order_time'
         )
         read_only_field = ('total_price', 'order_time')
 
@@ -118,12 +119,11 @@ class OrderCreateSerializer(serializers.ModelSerializer):
         calculated_drinks = []
         quantity_drinks = []
 
-
         for meal_data in meals:
             if not Menu.objects.filter(restaurant=restaurant, meals=meal_data['meal'].id).exists():
                 msg = _("Some meal doesn't come from restaurant menu")
                 raise serializers.ValidationError({'wrong meal': msg}, code='meal')
-            
+
             """Counting the number of same meals"""
             if meal_data not in calculated_meals:
                 calculated_meals.append(meal_data)
@@ -134,8 +134,8 @@ class OrderCreateSerializer(serializers.ModelSerializer):
 
         """Counting the number of same meals, continued"""
         for index in range(len(calculated_meals)):
-            calculated_meals[index]['quantity'] = quantity_meals[index]       
-        
+            calculated_meals[index]['quantity'] = quantity_meals[index]
+
         for drink_data in drinks:
             if not Menu.objects.filter(restaurant=restaurant, drinks=drink_data['drink'].id).exists():
                 msg = _("Some drink doesn't come from restaurant menu")
@@ -148,14 +148,14 @@ class OrderCreateSerializer(serializers.ModelSerializer):
             else:
                 index = calculated_drinks.index(drink_data)
                 quantity_drinks[index] += drink_data['quantity']
-        
+
         """Counting the number of same meals, continued"""
         for index in range(len(calculated_drinks)):
-            calculated_drinks[index]['quantity'] = quantity_drinks[index] 
-        
+            calculated_drinks[index]['quantity'] = quantity_drinks[index]
+
         attr['meals'] = calculated_meals
         attr['drinks'] = calculated_drinks
-        
+
         return attr
 
     def create(self, validated_data):

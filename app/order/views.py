@@ -2,11 +2,7 @@ from rest_framework import generics, viewsets, mixins
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 
-from .serializers import (
-                          OrderSerializer,
-                          OrderCreateSerializer,
-                          OrderDetailSerializer
-                        )
+from .serializers import (OrderSerializer, OrderCreateSerializer, OrderDetailSerializer)
 from core.models import Order
 
 
@@ -23,7 +19,7 @@ class OrderViewSet(viewsets.GenericViewSet,
         """Return appropriate serializer class"""
         if self.action == 'retrieve':
             return OrderDetailSerializer
-        
+
         return self.serializer_class
 
 

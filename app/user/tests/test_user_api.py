@@ -4,14 +4,11 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.utils.encoding import smart_bytes
 from django.utils.http import urlsafe_base64_encode
-from django.core import mail
 
 from rest_framework.test import APIClient
 from rest_framework import status
 
 from user.tasks import send_reset_password_email
-
-from datetime import timedelta
 
 from time import sleep
 
@@ -176,7 +173,6 @@ class PrivateUserApiTests(TestCase):
 
     def test_reset_password_sending_mail(self):
         """Test requesting a password reset"""
-        payload = {'email': self.user.email}
 
         res = send_reset_password_email.delay(
             'test subject',
@@ -185,6 +181,7 @@ class PrivateUserApiTests(TestCase):
         )
         sleep(10)
         self.assertEqual(res.status, 'SUCCESS')
+
     def test_reset_password_request_with_invalid_email(self):
         """Test requesting a password reset with invalid email"""
         payload = {'email': ''}
