@@ -1,34 +1,30 @@
-from rest_framework import generics
+from rest_framework import generics, viewsets, mixins
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 
-from .serializers import (OrderSerializer,
-                          OrderDetailSerializer,
-                          OrderCreateSerializer
-                          )
+from .serializers import (
+                          OrderSerializer,
+                          OrderCreateSerializer,
+                          OrderDetailSerializer
+                        )
 from core.models import Order
 
 
-class OrderListView(generics.ListAPIView):
-    """Order list view"""
+class OrderViewSet(viewsets.GenericViewSet,
+                   mixins.ListModelMixin,
+                   mixins.RetrieveModelMixin):
+    """Retrieve orders list"""
     serializer_class = OrderSerializer
-    authentication_classes = (TokenAuthentication,)
-    permission_classes = (IsAuthenticated,)
+    permission_classers = (IsAuthenticated,)
+    queryset = Order.objects.all()
+    lookup_field = 'id'
 
-    def get_queryset(self):
-        """Return order for logged user"""
-        return Order.objects.filter(user=self.request.user)
-
-
-class OrderDetailView(generics.RetrieveAPIView):
-    """Order detail view"""
-    serializer_class = OrderDetailSerializer
-    authentication_classes = (TokenAuthentication,)
-    permission_classes = (IsAuthenticated,)
-
-    def get_queryset(self):
-        """Return order for logged user"""
-        return Order.objects.filter(user=self.request.user)
+    def get_serializer_class(self):
+        """Return appropriate serializer class"""
+        if self.action == 'retrieve':
+            return OrderDetailSerializer
+        
+        return self.serializer_class
 
 
 class OrderCreateView(generics.CreateAPIView):
