@@ -50,7 +50,7 @@ class Cuisine(models.Model):
     name = models.CharField(max_length=255, blank=False)
 
     def __str__(self):
-        return self.name
+        return self.name.capitalize()
 
 
 class Restaurant(models.Model):
@@ -67,7 +67,7 @@ class Restaurant(models.Model):
     avg_delivery_time = models.PositiveSmallIntegerField(blank=False)
 
     def __str__(self):
-        return self.name
+        return self.name.capitalize()
 
     def save(self, *args, **kwargs):
         self.slug = slugify(self.name)
@@ -76,10 +76,10 @@ class Restaurant(models.Model):
 
 class Tag(models.Model):
     """Tag model"""
-    name = models.CharField(max_length=255, blank=False)
+    name = models.CharField(max_length=255, blank=True)
 
     def __str__(self):
-        return self.name
+        return self.name.capitalize()
 
 
 class Ingredient(models.Model):
@@ -87,7 +87,7 @@ class Ingredient(models.Model):
     name = models.CharField(max_length=255, blank=False)
 
     def __str__(self):
-        return self.name
+        return self.name.capitalize()
 
 
 class Meal(models.Model):
@@ -95,19 +95,20 @@ class Meal(models.Model):
     name = models.CharField(max_length=255, blank=False)
     price = models.DecimalField(max_digits=5, decimal_places=2, blank=False)
     ingredients = models.ManyToManyField(Ingredient)
-    tag = models.ForeignKey(Tag, on_delete=models.CASCADE)
+    tag = models.ForeignKey(Tag, on_delete=models.CASCADE, default=None)
 
     def __str__(self):
-        return self.name
+        return self.name.capitalize()
 
 
 class Drink(models.Model):
     """Drink model"""
     name = models.CharField(max_length=255, blank=False)
     price = models.DecimalField(max_digits=5, decimal_places=2, blank=False)
+    tag = models.ForeignKey(Tag, on_delete=models.CASCADE, default=None)
 
     def __str__(self):
-        return self.name
+        return self.name.capitalize()
 
 
 class Menu(models.Model):
@@ -124,27 +125,45 @@ class Order(models.Model):
     """Order model"""
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE)
-    meals = models.ManyToManyField(Meal)
-    drinks = models.ManyToManyField(Drink)
+    is_ordered = models.BooleanField(default=False)
     delivery_address = models.CharField(max_length=255, blank=False)
     delivery_city = models.CharField(max_length=255, blank=False)
     delivery_country = models.CharField(max_length=255, blank=False)
     delivery_post_code = models.CharField(max_length=7, blank=False)
     delivery_phone = models.CharField(max_length=255, blank=False)
     order_time = models.DateTimeField(auto_now_add=True)
+    total_price = models.DecimalField(max_digits=5, decimal_places=2, default=Decimal(0))
 
     def __str__(self):
-        return f'Order: {self.user} - {self.id} from {self.restaurant}'
+        return f'Order: {self.user}-{self.id} from {self.restaurant}'
+
+    def save(self, *args, **kwargs):
+        
+        self.total_price += Decimal(self.restaurant.delivery_price)
+        super().save(*args, **kwargs)
+
+
+class OrderDrink(models.Model):
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, null=True, blank=True)
+    drink = models.ForeignKey(Drink, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=1)
 
     @property
-    def get_total_price(self):
-        """Return total price of order"""
-        total_price = Decimal(0)
-        total_price += Decimal(self.restaurant.delivery_price)
+    def get_total_drink_price(self):
+        return Decimal(self.drink.price * self.quantity)
 
-        for meal in self.meals.all():
-            total_price += Decimal(meal.price)
-        for drink in self.drinks.all():
-            total_price += Decimal(drink.price)
+    def __str__(self):
+        return f'Order id: {self.order.id}, drink: {self.drink.name}'
 
-        return total_price
+
+class OrderMeal(models.Model):
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, null=True, blank=True)
+    meal = models.ForeignKey(Meal, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=1)
+
+    @property
+    def get_total_meal_price(self):
+        return Decimal(self.meal.price * self.quantity)
+    
+    def __str__(self):
+        return f'Order id: {self.order.id}, meal: {self.meal.name}'
