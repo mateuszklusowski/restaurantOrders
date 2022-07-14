@@ -247,6 +247,99 @@ class ModelTests(TestCase):
         self.assertEqual(order.delivery_city, params['delivery_city'])
         self.assertEqual(order.delivery_phone, params['delivery_phone'])
         self.assertEqual(order.delivery_post_code, params['delivery_post_code'])
+        self.assertEqual(order.total_price, restaurant.delivery_price)
         self.assertEqual(order.order_time.day, params['order_time'].day)
         self.assertEqual(order.order_time.hour, params['order_time'].hour)
         self.assertEqual(order.order_time.minute, params['order_time'].minute)
+
+    def test_order_meal_model(self):
+        """Test order meal model"""
+        user_params = {
+            'email': 'test@test.com',
+            'name': 'test',
+            'password': 'testpassword'
+        }
+        user = sample_user(**user_params)
+
+        restaurant_params = {
+            'name': 'Test name',
+            'city': 'Warsaw',
+            'country': 'Poland',
+            'address': 'tes_address',
+            'post_code': '11-111',
+            'phone': 'test phone',
+            'cuisine': sample_cuisine('Indian'),
+            'delivery_price': 7.50,
+            'avg_delivery_time': 60
+        }
+        restaurant = sample_restaurant(**restaurant_params)
+
+        order_params = {
+            'user': user,
+            'restaurant': restaurant,
+            'is_ordered': False,
+            'delivery_address': 'test address',
+            'delivery_city': 'Warsaw',
+            'delivery_country': 'Poland',
+            'delivery_post_code': '11-111',
+            'delivery_phone': 'test phone',
+            'order_time': datetime.datetime.now()
+        }
+        order = models.Order.objects.create(**order_params)
+
+        meal = sample_meal(name='test meal', price=1.00, tag=sample_tag('tag'))
+        order_meal = models.OrderMeal.objects.create(
+            order=order,
+            meal=meal,
+            quantity=2
+        )
+
+        self.assertEqual(order_meal.order, order)
+        self.assertEqual(order_meal.meal, meal)
+        self.assertEqual(order_meal.quantity, 2)
+
+    def test_order_drink_model(self):
+        """Test order drink model"""
+        user_params = {
+            'email': 'test@test.com',
+            'name': 'test',
+            'password': 'testpassword'
+        }
+        user = sample_user(**user_params)
+
+        restaurant_params = {
+            'name': 'Test name',
+            'city': 'Warsaw',
+            'country': 'Poland',
+            'address': 'tes_address',
+            'post_code': '11-111',
+            'phone': 'test phone',
+            'cuisine': sample_cuisine('Indian'),
+            'delivery_price': 7.50,
+            'avg_delivery_time': 60
+        }
+        restaurant = sample_restaurant(**restaurant_params)
+
+        order_params = {
+            'user': user,
+            'restaurant': restaurant,
+            'is_ordered': False,
+            'delivery_address': 'test address',
+            'delivery_city': 'Warsaw',
+            'delivery_country': 'Poland',
+            'delivery_post_code': '11-111',
+            'delivery_phone': 'test phone',
+            'order_time': datetime.datetime.now()
+        }
+        order = models.Order.objects.create(**order_params)
+
+        drink = sample_drink(name='test drink', price=1.00, tag=sample_tag('tag'))
+        order_drink = models.OrderDrink.objects.create(
+            order=order,
+            drink=drink,
+            quantity=2
+        )
+
+        self.assertEqual(order_drink.order, order)
+        self.assertEqual(order_drink.drink, drink)
+        self.assertEqual(order_drink.quantity, 2)
