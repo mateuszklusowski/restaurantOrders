@@ -6,7 +6,7 @@ from rest_framework import status
 
 from restaurant.serializers import RestaurantSerializer, RestaurantDetailSerializer
 
-from core.models import Restaurant, Cuisine
+from core.models import Restaurant, Cuisine, Menu
 
 
 RESTAURANTS_URL = reverse("restaurant:restaurant-list")
@@ -23,6 +23,7 @@ def detail_url(restaurant_id):
 
 
 def sample_restaurant(restaurant_name):
+    """Sample restaurant for testing"""
     return Restaurant.objects.create(
         name=restaurant_name,
         city='Warsaw',
@@ -56,6 +57,8 @@ class GetRestaurantListTest(TestCase):
     def test_view_restaurant_detail(self):
         """Test viewing a restaurant detail"""
         restaurant = sample_restaurant('restaurant2')
+
+        Menu.objects.create(restaurant=restaurant)
 
         url = detail_url(restaurant.slug)
 
