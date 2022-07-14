@@ -130,7 +130,6 @@ USE_TZ = True
 STATIC_URL = 'static/'
 
 # Email settings
-MAILER_EMAIL_THROTTLE = 1
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = config('EMAIL_HOST')
