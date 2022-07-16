@@ -2,7 +2,15 @@
 name: Checks
  
 on: [push]
- 
+
+env:
+  SECRET_KEY: ${{ secrets.SECRET_KEY }} 
+  DEBUG: ${{ secrets.DEBUG }}
+  # NAME: os.environ.get('DB_NAME'),
+  # USER: os.environ.get('DB_USER'),
+  # PASSWORD: os.environ.get('DB_PASSWORD'),
+  # HOST: os.environ.get('DB_HOST'),
+
 jobs:
   test-lint:
     name: Test and Lint
@@ -16,8 +24,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Test
-        run: docker-compose run --rm app sh -c "python manage.py test"
-        env:
-          SECRET_KEY: ${{ secrets.SECRET_KEY }} 
+        run: docker-compose run --rm app sh -c "python manage.py test" 
       - name: Lint
         run: docker-compose run --rm app sh -c "flake8"
