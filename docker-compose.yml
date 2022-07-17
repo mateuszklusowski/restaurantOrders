@@ -15,6 +15,8 @@ services:
       sh -c "python3 manage.py wait_for_db &&
              python3 manage.py migrate &&
              python3 manage.py runserver 0.0.0.0:8000"
+    env_file:
+      - app/.env
     environment:
       - DB_HOST=db
       - DB_NAME=postgres
@@ -32,6 +34,8 @@ services:
       args:
         - DEV=true
     command: celery -A app worker --loglevel=INFO
+    env_file:
+      - app/.env
     environment:
       - DB_HOST=db
       - DB_NAME=postgres
