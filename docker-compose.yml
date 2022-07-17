@@ -12,12 +12,19 @@ services:
     volumes:
       - ./app:/app
     command: >
-      sh -c "python3 manage.py wait_for_db &&
-             python3 manage.py makemigrations &&
-             python3 manage.py migrate &&
-             python3 manage.py runserver 0.0.0.0:8000"
-    # env_file:
-    #   - app/.env
+      sh -c "python3 manage.py wait_for_db --settings=app.settings.test&&
+             python3 manage.py makemigrations --settings=app.settings.test &&
+             python3 manage.py migrate --settings=app.settings.test &&
+             python manage.py runserver --settings=app.settings.test 0.0.0.0:8000"
+    env_file:
+      - app/.env
+    environment:
+      - DB_HOST=db
+      - DB_NAME=postgres
+      - DB_USER=postgres
+      - DB_PASSWORD=postpsw
+      - CELERY_BROKER=redis://redis:6379/0
+      - CELERY_BACKEND=redis://redis:6379/0
     depends_on:
       - db
 
@@ -28,8 +35,15 @@ services:
       args:
         - DEV=true
     command: celery -A app worker --loglevel=INFO
-    # env_file:
-    #   - app/.env
+    env_file:
+      - app/.env
+    environment:
+      - DB_HOST=db
+      - DB_NAME=postgres
+      - DB_USER=postgres
+      - DB_PASSWORD=postpsw
+      - CELERY_BROKER=redis://redis:6379/0
+      - CELERY_BACKEND=redis://redis:6379/0
     volumes:
       - ./app:/app
     depends_on:
@@ -40,12 +54,10 @@ services:
   db:
     image: postgres:14-alpine
     container_name: pgdb-restaurant
-    # env_file:
-    #   - app/.env
     environment:
-      - POSTGRES_DB=${DB_NAME}
-      - POSTGRES_USER=${DB_USER}
-      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postpsw
       
   redis:
     image: redis:alpine
