@@ -3,6 +3,10 @@ name: Checks
  
 on: [push]
 
+env:
+  SECRET_KEY: ${{ secrets.SECRET_KEY }}
+  DEBUG: ${{ secrets.DEBUG }}
+
 jobs:
   test-lint:
     name: Test and Lint
