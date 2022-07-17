@@ -3,6 +3,10 @@ name: Checks
  
 on: [push]
 
+env:
+  SECRET_KEY: ${{ secrets.SECRET_KEY }}
+   DEBUG: ${{ secrets.DEBUG }}
+
 jobs:
   test-lint:
     name: Test and Lint
@@ -17,8 +21,4 @@ jobs:
         uses: actions/checkout@v2
       - name: Test
         run: docker-compose up -d && docker-compose run --rm app sh -c "python3 manage.py wait_for_db && python3 manage.py test restaurant"
-        env:
-          SECRET_KEY: ${{ secrets.SECRET_KEY }}
-          DEBUG: ${{ secrets.DEBUG }}
-      - name: Lint
         run: docker-compose run --rm app sh -c "flake8"
