@@ -5,7 +5,7 @@ on: [push]
 
 env:
   SECRET_KEY: ${{ secrets.SECRET_KEY }}
-   DEBUG: ${{ secrets.DEBUG }}
+  DEBUG: ${{ secrets.DEBUG }}
 
 jobs:
   test-lint:
