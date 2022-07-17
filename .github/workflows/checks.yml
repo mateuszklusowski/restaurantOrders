@@ -32,6 +32,6 @@ jobs:
         run: docker-compose run --rm app sh -c "python3 manage.py test"
         env:
           POSTGRES_HOST: postgres
-          POSTGRES_PORT: ${{ jobs.services.postgres.ports[5432] }}
+          POSTGRES_PORT: ${{ job.services.postgres.ports[5432] }}
       - name: Lint
         run: docker-compose run --rm app sh -c "flake8"
