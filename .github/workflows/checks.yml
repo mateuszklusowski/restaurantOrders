@@ -7,6 +7,8 @@ jobs:
   test-lint:
     name: Test and Lint
     runs-on: ubuntu-latest
+    env:
+      SECRET_KEY: ${{secrets.SECRET_KEY}}
     steps:
       - name: Login to Docker Hub
         uses: docker/login-action@v1
@@ -16,6 +18,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Test
-        run: docker-compose up -d -e SECRET_KEY='${{secrets.SECRET_KEY}}' && docker-compose -e SECRET_KEY='${{secrets.SECRET_KEY}}' run --rm app sh -c "python3 manage.py wait_for_db && python3 manage.py test restaurant"
+        run: docker-compose up -d && docker-compose run --rm app sh -c "python3 manage.py wait_for_db && python3 manage.py test restaurant"
       - name: Lint
         run: docker-compose run --rm app sh -c "flake8"
