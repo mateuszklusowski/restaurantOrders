@@ -16,8 +16,8 @@ services:
              python3 manage.py makemigrations --settings=app.settings.test &&
              python3 manage.py migrate --settings=app.settings.test &&
              python manage.py runserver --settings=app.settings.test 0.0.0.0:8000"
-    env_file:
-      - app/.env
+    # env_file:
+    #   - app/.env
     environment:
       - DB_HOST=db
       - DB_NAME=postgres
@@ -35,8 +35,8 @@ services:
       args:
         - DEV=true
     command: celery -A app worker --loglevel=INFO
-    env_file:
-      - app/.env
+    # env_file:
+    #   - app/.env
     environment:
       - DB_HOST=db
       - DB_NAME=postgres
