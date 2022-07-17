@@ -24,7 +24,7 @@ jobs:
         
       - name: Test
         run: |
-          docker-compose up --env-file app/.env --wait && 
+          docker-compose up -d --env-file app/.env && 
           docker-compose --env-file app/.env run --rm app sh -c "python3 manage.py wait_for_db && python3 manage.py test restaurant"
       - name: Lint
         run: docker-compose run --rm app sh -c "flake8"
