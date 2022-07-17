@@ -27,10 +27,10 @@ jobs:
           touch app/.env
           echo SECRET_KEY="$SECRET_KEY" >> app/.env
           echo DEBUG="$DEBUG" >> app/.env
-          echo DB_NAME=$DB_NAME
-          echo DB_HOST=$DB_HOST
-          echo DB_USER=$DB_USER
-          echo DB_PASSWORD=$DB_PASSWORD
+          echo DB_NAME=$DB_NAME >> app/.env
+          echo DB_HOST=$DB_HOST >> app/.env
+          echo DB_USER=$DB_USER >> app/.env
+          echo DB_PASSWORD=$DB_PASSWORD >> app/.env
       - name: Test
         run: |
           docker-compose --env-file app/.env up -d&& 
