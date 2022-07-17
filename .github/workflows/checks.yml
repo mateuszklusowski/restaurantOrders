@@ -15,6 +15,8 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Checkout
         uses: actions/checkout@v2
+      - name: Testng variables
+        run: echo ${{ secrets.DEBUG ))
       - name: Test
         run: docker-compose up -d && docker-compose run --rm app sh -c "python3 manage.py wait_for_db && python3 manage.py test restaurant"
       - name: Lint
