@@ -11,9 +11,9 @@ jobs:
       postgres:
         image: postgres:14-alpine
         env:
-          POSTGRES_USER: ${{secrets.DB_USER}}
-          POSTGRES_PASSWORD: ${{secrets.DB_PASSWORD}}
-          POSTGRES_DB: ${{secrets.DB_NAME}}
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
         ports:
           - "5432:5432"
         # needed because the postgres   container does not provide a healthcheck
@@ -29,6 +29,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Test
-        run: docker-compose run --rm app sh -c "python3 manage.py test" 
+        run: docker-compose run --rm app sh -c "python3 manage.py test"
+        env:
+          POSTGRES_HOST: postgres
+          POSTGRES_PORT: ${{ jobs.services.postgres.ports[5432] }}
       - name: Lint
         run: docker-compose run --rm app sh -c "flake8"
