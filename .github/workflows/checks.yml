@@ -20,8 +20,8 @@ jobs:
           SECRETS: ${{secrets.TEST123}}
         run: |
           touch app/.env
-          echo $SECRETS >> app/.env
-          cat app/.env
+          printf $SECRETS >> app/.env
+          echo app/.env
       - name: Test
         run: |
           docker-compose --env-file app/.env up -d&& 
