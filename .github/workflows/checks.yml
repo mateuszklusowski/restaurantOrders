@@ -20,7 +20,7 @@ jobs:
           SECRETS: ${{secrets.TEST123}}
         run: |
           touch app/.env
-          echo $$SECRETS >> app/.env
+          echo $SECRETS >> app/.env
           cat app/.env
       - name: Test
         run: |
