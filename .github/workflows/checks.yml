@@ -19,6 +19,5 @@ jobs:
         env:
           SECRETS: ${{secrets.TEST123}}
         run: |
-          touch app/.env
           echo ${{env.SECRETS}} >> app/.env
           cat app/.env
