@@ -21,6 +21,7 @@ jobs:
         run: |
           touch app/.env
           echo $SECRETS >> app/.env
+          cat app/.env
       - name: Test
         run: |
           docker-compose --env-file app/.env up -d&& 
