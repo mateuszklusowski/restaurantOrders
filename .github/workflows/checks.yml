@@ -20,4 +20,7 @@ jobs:
           SECRETS: ${{secrets.TEST123}}
         run: |
           printf ${{env.SECRETS}} >> app/.env
-          cat app/.env
+      - name: Test
+        run: |
+          docker-compose --env-file app/.env up -d&& 
+          docker-compose --env-file app/.env run --rm app sh -c "python3 manage.py wait_for_db && python3 manage.py test restaurant"
