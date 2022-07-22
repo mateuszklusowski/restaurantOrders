@@ -6,17 +6,29 @@ from rest_framework.test import APIClient
 from rest_framework import status
 
 from order import serializers as order_serializers
-from core.models import Order, Tag, Meal, Drink, Ingredient, Restaurant, Cuisine
+from core.models import (Order,
+                         Tag,
+                         Meal,
+                         Drink,
+                         Ingredient,
+                         Restaurant,
+                         Cuisine,
+                         OrderDrink,
+                         OrderMeal,
+                         Menu)
+
 
 ORDERS_URL = reverse('order:order-list')
 ORDER_CREATE_URL = reverse('order:order-create')
 
 
 def detail_url(order_id):
+    """Return order detail url"""
     return reverse('order:order-detail', args=[order_id])
 
 
 def create_user(**params):
+    """Sample user for testing"""
     return get_user_model().objects.create_user(**params)
 
 
@@ -59,7 +71,7 @@ def sample_meal(**params):
 
 def sample_drink(**params):
     """Sample drink for testing"""
-    default = {'price': 2.50}
+    default = {'price': 2.50, 'tag': sample_tag('water')}
     default.update(**params)
     return Drink.objects.create(**default)
 
@@ -75,18 +87,9 @@ def sample_order(**params):
         'delivery_phone': 'some phone',
         'delivery_phone': 'some phone'
     }
-    meals = params['meals']
-    drinks = params['drinks']
-
-    params.pop('drinks')
-    params.pop('meals')
     default.update(**params)
 
-    order = Order.objects.create(**default)
-    order.meals.set(meals)
-    order.drinks.set(drinks)
-
-    return order
+    return Order.objects.create(**default)
 
 
 class PublicOrderApiTests(TestCase):
@@ -117,16 +120,8 @@ class PrivateOrderApiTests(TestCase):
 
     def test_retrieve_orders(self):
         """Test retrieving orders"""
-        sample_order(
-            user=self.user,
-            meals=[sample_meal(name='meal1',), sample_meal(name='meal2')],
-            drinks=[sample_drink(name='drink3'), sample_drink(name='drink4')]
-        )
-        sample_order(
-            user=self.user,
-            meals=[sample_meal(name='meal3', price=20.00), sample_meal(name='meal4')],
-            drinks=[sample_drink(name='drink1'), sample_drink(name='drink2')]
-        )
+        sample_order(user=self.user)
+        sample_order(user=self.user)
 
         res = self.client.get(ORDERS_URL)
 
@@ -142,16 +137,8 @@ class PrivateOrderApiTests(TestCase):
             password='testpass',
             name='Other name'
         )
-        sample_order(
-            user=user2,
-            meals=[sample_meal(name='meal1'), sample_meal(name='meal2')],
-            drinks=[sample_drink(name='drink1'), sample_drink(name='drink2')]
-        )
-        sample_order(
-            user=self.user,
-            meals=[sample_meal(name='meal3', price=20.00), sample_meal(name='meal4')],
-            drinks=[sample_drink(name='drink1'), sample_drink(name='drink2')]
-        )
+        sample_order(user=self.user)
+        sample_order(user=user2)
 
         res = self.client.get(ORDERS_URL)
 
@@ -164,21 +151,13 @@ class PrivateOrderApiTests(TestCase):
 
     def test_retrieve_detail_order(self):
         """Test retrieving detail order"""
-        order1 = sample_order(
-            user=self.user,
-            meals=[sample_meal(name='meal1'), sample_meal(name='meal2')],
-            drinks=[sample_drink(name='drink1'), sample_drink(name='drink2')]
-        )
-        order2 = sample_order(
-            user=self.user,
-            meals=[sample_meal(name='meal3', price=20.00), sample_meal(name='meal4')],
-            drinks=[sample_drink(name='drink1'), sample_drink(name='drink2')]
-        )
+        order = sample_order(user=self.user, restaurant=sample_restaurant('rest2'))
+        order2 = sample_order(user=self.user)
 
-        url = detail_url(order1.id)
+        url = detail_url(order.id)
         res = self.client.get(url)
 
-        serializer1 = order_serializers.OrderDetailSerializer(order1)
+        serializer1 = order_serializers.OrderDetailSerializer(order)
         serializer2 = order_serializers.OrderDetailSerializer(order2)
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
@@ -188,48 +167,52 @@ class PrivateOrderApiTests(TestCase):
     def test_create_order(self):
         """Test create an order"""
 
+        restaurant = sample_restaurant('restaurant1')
+        meal1 = sample_meal(name="meal1")
+        meal2 = sample_meal(name="meal2")
+        drink1 = sample_drink(name="drink1")
+        drink2 = sample_drink(name="drink2")
+
+        menu = Menu.objects.create(restaurant=restaurant)
+        menu.meals.set([meal1, meal2])
+        menu.drinks.set([drink1, drink2])
+
         payload = {
-            'user': self.user.id,
-            'restaurant': sample_restaurant('restaurant1').id,
-            'meals': [sample_meal(name='meal1').id, sample_meal(name='meal2').id],
-            'drinks': [sample_drink(name='drink1').id, sample_drink(name='drink2').id],
-            'delivery_address': 'some address',
-            'delivery_city': 'some city',
-            'delivery_country': 'some country',
-            'delivery_post_code': '01-223',
-            'delivery_phone': 'some phone'
+            "restaurant": restaurant.id,
+            "meals": [
+                {"meal": meal1.id, "quantity": 10},
+                {"meal": meal2.id, "quantity": 10}
+            ],
+            "drinks": [
+                {"drink": drink1.id, "quantity": 10},
+                {"drink": drink2.id, "quantity": 10}
+            ],
+            "delivery_city": "some city",
+            "delivery_address": "some address",
+            "delivery_country": "some country",
+            "delivery_post_code": "01-223",
+            "delivery_phone": "some phone"
         }
 
-        res = self.client.post(ORDER_CREATE_URL, payload)
+        res = self.client.post(ORDER_CREATE_URL, payload, format='json')
 
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+
         order = Order.objects.get(id=res.data['id'])
-        ids_key = ['user', 'restaurant', 'meals', 'drinks']
+
+        bad_assertion_keys = ['restaurant', 'meals', 'drinks']
+
         for key in payload.keys():
-            if key in ids_key:
-                if key == 'meals' or key == 'drinks':
-                    for index in payload[key]:
-                        self.assertIn(getattr(order, key).filter(id=index)[0].id, payload[key])
-                else:
-                    self.assertEqual(payload[key], getattr(order, key).id)
-            else:
-                self.assertEqual(payload[key], getattr(order, key))
+            if key in bad_assertion_keys:
+                continue
+            self.assertEqual(payload[key], getattr(order, key))
 
-    def test_create_invalid_order(self):
-        """Test creating invalid order"""
+        self.assertEqual(payload['restaurant'], order.restaurant.id)
 
-        payload = {
-            'user': '',
-            'restaurant': sample_restaurant('restaurant1').id,
-            'meals': [sample_meal(name='meal1').id, sample_meal(name='meal2').id],
-            'drinks': [sample_drink(name='drink1').id, sample_drink(name='drink2').id],
-            'delivery_address': 'some address',
-            'delivery_city': 'some city',
-            'delivery_country': 'some country',
-            'delivery_post_code': '01-223',
-            'delivery_phone': 'some phone'
-        }
+        for meal in payload['meals']:
+            order_meal = OrderMeal.objects.get(id=meal['meal'])
+            self.assertEqual(order_meal.order.id, order.id)
 
-        res = self.client.post(ORDER_CREATE_URL, payload)
-
-        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+        for drink in payload['drinks']:
+            order_drink = OrderDrink.objects.get(id=drink['drink'])
+            self.assertEqual(order_drink.order.id, order.id)

@@ -35,7 +35,8 @@ services:
     env_file:
       - app/.env
     depends_on:
-      - redis
+      - db
+      - celery
 
   celery:
     restart: always
@@ -49,4 +50,5 @@ services:
     volumes:
       - ./app:/app
     depends_on:
-      - app
+      - redis
+      - db

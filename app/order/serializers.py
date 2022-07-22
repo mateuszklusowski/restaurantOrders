@@ -95,6 +95,7 @@ class OrderCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = (
+            'id',
             'restaurant',
             'meals',
             'drinks',
@@ -106,7 +107,6 @@ class OrderCreateSerializer(serializers.ModelSerializer):
             'total_price',
             'order_time'
         )
-        read_only_field = ('total_price', 'order_time')
 
     def validate(self, attr):
         """Validate that meals and drinks come from right restaurant"""
@@ -115,43 +115,49 @@ class OrderCreateSerializer(serializers.ModelSerializer):
         drinks = attr.get('drinks')
 
         calculated_meals = []
-        quantity_meals = []
         calculated_drinks = []
-        quantity_drinks = []
 
+        """Raise error for empty order"""
+        if not meals:
+            msg = _("Cannot order nothing")
+            raise serializers.ValidationError({'meal': msg}, code='nothing')
+
+        """Raise error for wrong meal and counting the number of the same meals"""
         for meal_data in meals:
             if not Menu.objects.filter(restaurant=restaurant, meals=meal_data['meal'].id).exists():
                 msg = _("Some meal doesn't come from restaurant menu")
                 raise serializers.ValidationError({'wrong meal': msg}, code='meal')
 
-            """Counting the number of same meals"""
-            if meal_data not in calculated_meals:
-                calculated_meals.append(meal_data)
-                quantity_meals.append(meal_data['quantity'])
-            else:
-                index = calculated_meals.index(meal_data)
-                quantity_meals[index] += meal_data['quantity']
+            if not calculated_meals:
+                calculated_meals.append({'meal': meal_data['meal'], 'quantity': meal_data['quantity']})
+                continue
 
-        """Counting the number of same meals, continued"""
-        for index in range(len(calculated_meals)):
-            calculated_meals[index]['quantity'] = quantity_meals[index]
+            for meal in calculated_meals:
+                if meal_data['meal'].id == meal['meal'].id:
+                    meal['quantity'] += meal_data['quantity']
+                    break
+                else:
+                    calculated_meals.append({'meal': meal_data['meal'], 'quantity': meal_data['quantity']})
+                    break
 
+        """Raise error for wrong drink and counting the number of the same drinks"""
         for drink_data in drinks:
             if not Menu.objects.filter(restaurant=restaurant, drinks=drink_data['drink'].id).exists():
                 msg = _("Some drink doesn't come from restaurant menu")
                 raise serializers.ValidationError({'wrong drink': msg}, code='drink')
 
-            """Counting the number of same meals"""
-            if drink_data not in calculated_drinks:
-                calculated_drinks.append(drink_data)
-                quantity_drinks.append(drink_data['quantity'])
-            else:
-                index = calculated_drinks.index(drink_data)
-                quantity_drinks[index] += drink_data['quantity']
+            if not calculated_drinks:
+                calculated_drinks.append({'drink': drink_data['drink'], 'quantity': drink_data['quantity']})
+                continue
 
-        """Counting the number of same meals, continued"""
-        for index in range(len(calculated_drinks)):
-            calculated_drinks[index]['quantity'] = quantity_drinks[index]
+            for drink in calculated_drinks:
+                if drink_data['drink'].id == drink['drink'].id:
+                    drink['quantity'] += drink_data['quantity']
+                    break
+                else:
+                    calculated_drinks.pop()
+                    calculated_drinks.append({'drink': drink_data['drink'], 'quantity': drink_data['quantity']})
+                    break
 
         attr['meals'] = calculated_meals
         attr['drinks'] = calculated_drinks

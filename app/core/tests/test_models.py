@@ -51,9 +51,11 @@ class ModelTests(TestCase):
         }
         user = sample_user(**params)
 
-        self.assertEqual(user.name, params['name'])
-        self.assertEqual(user.email, params['email'])
-        self.assertTrue(user.check_password(params['password']))
+        for key in params.keys():
+            if key == 'password':
+                self.assertTrue(user.check_password(params['password']))
+                continue
+            self.assertEqual(params[key], getattr(user, key))
 
     def test_normalized_email(self):
         """Test the email for a new user is normalized"""
@@ -103,15 +105,8 @@ class ModelTests(TestCase):
         }
         restaurant = sample_restaurant(**params)
 
-        self.assertEqual(str(restaurant), params['name'])
-        self.assertEqual(restaurant.city, params['city'])
-        self.assertEqual(restaurant.country, params['country'])
-        self.assertEqual(restaurant.address, params['address'])
-        self.assertEqual(restaurant.post_code, params['post_code'])
-        self.assertEqual(restaurant.phone, params['phone'])
-        self.assertEqual(restaurant.cuisine, params['cuisine'])
-        self.assertEqual(restaurant.delivery_price, params['delivery_price'])
-        self.assertEqual(restaurant.avg_delivery_time, params['avg_delivery_time'])
+        for key in params.keys():
+            self.assertEqual(params[key], getattr(restaurant, key))
 
     def test_tag_model(self):
         """Test tag model"""
@@ -139,9 +134,9 @@ class ModelTests(TestCase):
         meal = models.Meal.objects.create(**params)
         meal.ingredients.set(ingredients)
 
-        self.assertEqual(str(meal), params['name'])
-        self.assertEqual(meal.tag, params['tag'])
-        self.assertEqual(meal.price, params['price'])
+        for key in params.keys():
+            self.assertEqual(params[key], getattr(meal, key))
+
         for ingredient in ingredients:
             self.assertIn(ingredient, meal.ingredients.all())
 
@@ -154,9 +149,8 @@ class ModelTests(TestCase):
         }
         drink = sample_drink(**params)
 
-        self.assertEqual(str(drink), params['name'])
-        self.assertEqual(drink.price, params['price'])
-        self.assertEqual(drink.tag, params['tag'])
+        for key in params.keys():
+            self.assertEqual(params[key], getattr(drink, key))
 
     def test_menu_model(self):
         """Test menu model"""
@@ -199,8 +193,10 @@ class ModelTests(TestCase):
         menu.drinks.set(drinks)
 
         self.assertEqual(str(menu), f'{restaurant.name} menu')
+
         for meal in meals:
             self.assertIn(meal, menu.meals.all())
+
         for drink in drinks:
             self.assertIn(drink, menu.drinks.all())
 
@@ -239,15 +235,11 @@ class ModelTests(TestCase):
         }
         order = models.Order.objects.create(**params)
 
-        self.assertEqual(order.user, params['user'])
-        self.assertEqual(order.restaurant, params['restaurant'])
-        self.assertEqual(order.is_ordered, params['is_ordered'])
-        self.assertEqual(order.delivery_address, params['delivery_address'])
-        self.assertEqual(order.delivery_country, params['delivery_country'])
-        self.assertEqual(order.delivery_city, params['delivery_city'])
-        self.assertEqual(order.delivery_phone, params['delivery_phone'])
-        self.assertEqual(order.delivery_post_code, params['delivery_post_code'])
-        self.assertEqual(order.total_price, restaurant.delivery_price)
+        for key in params.keys():
+            if key == 'order_time':
+                continue
+            self.assertEqual(params[key], getattr(order, key))
+
         self.assertEqual(order.order_time.day, params['order_time'].day)
         self.assertEqual(order.order_time.hour, params['order_time'].hour)
         self.assertEqual(order.order_time.minute, params['order_time'].minute)
