@@ -155,7 +155,6 @@ class OrderCreateSerializer(serializers.ModelSerializer):
                     drink['quantity'] += drink_data['quantity']
                     break
                 else:
-                    calculated_drinks.pop()
                     calculated_drinks.append({'drink': drink_data['drink'], 'quantity': drink_data['quantity']})
                     break
 
