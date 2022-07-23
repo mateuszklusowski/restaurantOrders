@@ -208,6 +208,7 @@ class PrivateOrderApiTests(TestCase):
             self.assertEqual(payload[key], getattr(order, key))
 
         self.assertEqual(payload['restaurant'], order.restaurant.id)
+        self.assertEqual(order.total_price, 262.00)
 
         for meal in payload['meals']:
             order_meal = OrderMeal.objects.get(id=meal['meal'])
@@ -216,3 +217,55 @@ class PrivateOrderApiTests(TestCase):
         for drink in payload['drinks']:
             order_drink = OrderDrink.objects.get(id=drink['drink'])
             self.assertEqual(order_drink.order.id, order.id)
+
+    def test_create_order_with_empty_meal(self):
+        """Test create order with no meal selected"""
+
+        payload = {
+            "restaurant": sample_restaurant('test').id,
+            "meals": [],
+            "drinks": [],
+            "delivery_city": "some city",
+            "delivery_address": "some address",
+            "delivery_country": "some country",
+            "delivery_post_code": "01-223",
+            "delivery_phone": "some phone"
+        }
+
+        res = self.client.post(ORDER_CREATE_URL, payload, format='json')
+
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_create_order_with_wrong_meal(self):
+        """Test create order with meal that is not on the menu"""
+
+        restaurant = sample_restaurant('restaurant1')
+        meal1 = sample_meal(name="meal1")
+        meal2 = sample_meal(name="meal2")
+        drink1 = sample_drink(name="drink1")
+        drink2 = sample_drink(name="drink2")
+
+        menu = Menu.objects.create(restaurant=restaurant)
+        menu.meals.set([meal1])
+        menu.drinks.set([drink1, drink2])
+
+        payload = {
+            "restaurant": restaurant.id,
+            "meals": [
+                {"meal": meal1.id, "quantity": 10},
+                {"meal": meal2.id, "quantity": 10}
+            ],
+            "drinks": [
+                {"drink": drink1.id, "quantity": 10},
+                {"drink": drink2.id, "quantity": 10}
+            ],
+            "delivery_city": "some city",
+            "delivery_address": "some address",
+            "delivery_country": "some country",
+            "delivery_post_code": "01-223",
+            "delivery_phone": "some phone"
+        }
+
+        res = self.client.post(ORDER_CREATE_URL, payload, format='json')
+
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
