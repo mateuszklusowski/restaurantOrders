@@ -58,8 +58,7 @@ class UserUpdatePassword(generics.UpdateAPIView):
             response = {
                 'status': 'success',
                 'code': status.HTTP_200_OK,
-                'message': 'Password updated successfully',
-                'data': []
+                'message': 'Password updated successfully'
             }
             return Response(response)
 
