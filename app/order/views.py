@@ -1,6 +1,4 @@
 from rest_framework import generics, viewsets, mixins
-from rest_framework.authentication import TokenAuthentication
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.parsers import JSONParser
 
 from .serializers import (OrderSerializer, OrderCreateSerializer, OrderDetailSerializer)
@@ -12,8 +10,6 @@ class OrderViewSet(viewsets.GenericViewSet,
                    mixins.RetrieveModelMixin):
     """Retrieve orders list"""
     serializer_class = OrderSerializer
-    authentication_classes = (TokenAuthentication,)
-    permission_classes = (IsAuthenticated,)
     queryset = Order.objects.all()
     lookup_field = 'id'
 
@@ -31,8 +27,6 @@ class OrderViewSet(viewsets.GenericViewSet,
 class OrderCreateView(generics.CreateAPIView):
     """Order create view"""
     serializer_class = OrderCreateSerializer
-    authentication_classes = (TokenAuthentication,)
-    permission_classes = (IsAuthenticated,)
     parser_classes = (JSONParser,)
 
     def perform_create(self, serializer):

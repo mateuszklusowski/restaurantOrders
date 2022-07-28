@@ -1,4 +1,4 @@
-from django.contrib.auth import get_user_model, authenticate
+from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.utils.encoding import force_str, smart_bytes
@@ -27,31 +27,31 @@ class UserSerializer(serializers.ModelSerializer):
         return get_user_model().objects.create_user(**validated_data)
 
 
-class AuthTokenSerializer(serializers.Serializer):
-    """Serialzier for the user authenticaton object"""
-    email = serializers.EmailField()
-    password = serializers.CharField(
-        style={'input_type': 'password'},
-        trim_whitespace=False
-    )
+# class AuthTokenSerializer(serializers.Serializer):
+#     """Serialzier for the user authenticaton object"""
+#     email = serializers.EmailField()
+#     password = serializers.CharField(
+#         style={'input_type': 'password'},
+#         trim_whitespace=False
+#     )
 
-    def validate(self, attrs):
-        """Validate and authenticate the user"""
-        email = attrs.get('email')
-        password = attrs.get('password')
+#     def validate(self, attrs):
+#         """Validate and authenticate the user"""
+#         email = attrs.get('email')
+#         password = attrs.get('password')
 
-        user = authenticate(
-            request=self.context.get('request'),
-            username=email,
-            password=password
-        )
+#         user = authenticate(
+#             request=self.context.get('request'),
+#             username=email,
+#             password=password
+#         )
 
-        if not user:
-            msg = _('Unable to authenticate with provided credentials')
-            raise serializers.ValidationError(msg, code='authentication')
+#         if not user:
+#             msg = _('Unable to authenticate with provided credentials')
+#             raise serializers.ValidationError(msg, code='authentication')
 
-        attrs['user'] = user
-        return attrs
+#         attrs['user'] = user
+#         return attrs
 
 
 class UserPasswordUpdateSerializer(serializers.Serializer):
@@ -154,7 +154,7 @@ class SetNewPasswordSerializer(serializers.Serializer):
             user.set_password(attrs.get('new_password1'))
             user.save()
 
-            return (user)
+            return user
 
         else:
             msg = _('Invalid token or expired')

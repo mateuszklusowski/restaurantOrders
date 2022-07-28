@@ -1,6 +1,4 @@
-from rest_framework import generics, authentication, permissions, status
-from rest_framework.authtoken.views import ObtainAuthToken
-from rest_framework.settings import api_settings
+from rest_framework import generics, status
 from rest_framework.response import Response
 
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
@@ -9,7 +7,6 @@ from django.contrib.auth import get_user_model
 from django.utils.http import urlsafe_base64_decode
 
 from .serializers import (UserSerializer,
-                          AuthTokenSerializer,
                           UserPasswordUpdateSerializer,
                           PasswordResetRequestSerializer,
                           SetNewPasswordSerializer
@@ -21,17 +18,9 @@ class CreateUserView(generics.CreateAPIView):
     serializer_class = UserSerializer
 
 
-class CreateTokenView(ObtainAuthToken):
-    """Create a new auth token for user"""
-    serializer_class = AuthTokenSerializer
-    renderer_classes = api_settings.DEFAULT_RENDERER_CLASSES
-
-
 class UserDetailView(generics.RetrieveAPIView):
     """Get user details view"""
     serializer_class = UserSerializer
-    authentication_classes = (authentication.TokenAuthentication,)
-    permission_classes = (permissions.IsAuthenticated,)
 
     def get_object(self):
         """Retrieve and return authentication user"""
@@ -41,8 +30,6 @@ class UserDetailView(generics.RetrieveAPIView):
 class UserUpdatePassword(generics.UpdateAPIView):
     """Change user password view"""
     serializer_class = UserPasswordUpdateSerializer
-    authentication_classes = (authentication.TokenAuthentication,)
-    permission_classes = (permissions.IsAuthenticated,)
 
     def get_object(self):
         """Retrieve and return authentication user"""

@@ -11,7 +11,7 @@ class RestaurantViewSet(viewsets.GenericViewSet,
                         mixins.RetrieveModelMixin):
     """Retrieve restaurant list"""
     serializer_class = RestaurantSerializer
-    permission_classers = (AllowAny,)
+    permission_classes = (AllowAny,)
     queryset = Restaurant.objects.all()
     lookup_field = 'slug'
 

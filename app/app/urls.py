@@ -25,5 +25,7 @@ urlpatterns = [
     path('api/user/', include('user.urls')),
     path('api/orders/', include('order.urls')),
     path('api/schema/', SpectacularAPIView.as_view(), name='api-schema'),
-    path('api/docs/', SpectacularSwaggerView.as_view(url_name='api-schema'), name='swagger')
+    path('api/docs/', SpectacularSwaggerView.as_view(url_name='api-schema'), name='swagger'),
+    path('auth/', include('drf_social_oauth2.urls', namespace='drf')),  # OAuth
+    path('o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
 ]
