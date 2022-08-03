@@ -28,6 +28,8 @@ DEBUG = bool(int(os.environ.get('DEBUG', 0)))
 
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 
+APPEND_SLASH=False
+
 AUTH_USER_MODEL = 'core.User' # Custom user model
 
 # Application definition

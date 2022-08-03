@@ -1,8 +1,8 @@
 from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
-from django.utils.encoding import force_str, smart_bytes
-from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import smart_bytes
+from django.utils.http import urlsafe_base64_encode
 from django.contrib.sites.shortcuts import get_current_site
 from django.urls import reverse
 
@@ -25,33 +25,6 @@ class UserSerializer(serializers.ModelSerializer):
         """Create a new user with encrypted password and return it"""
 
         return get_user_model().objects.create_user(**validated_data)
-
-
-# class AuthTokenSerializer(serializers.Serializer):
-#     """Serialzier for the user authenticaton object"""
-#     email = serializers.EmailField()
-#     password = serializers.CharField(
-#         style={'input_type': 'password'},
-#         trim_whitespace=False
-#     )
-
-#     def validate(self, attrs):
-#         """Validate and authenticate the user"""
-#         email = attrs.get('email')
-#         password = attrs.get('password')
-
-#         user = authenticate(
-#             request=self.context.get('request'),
-#             username=email,
-#             password=password
-#         )
-
-#         if not user:
-#             msg = _('Unable to authenticate with provided credentials')
-#             raise serializers.ValidationError(msg, code='authentication')
-
-#         attrs['user'] = user
-#         return attrs
 
 
 class UserPasswordUpdateSerializer(serializers.Serializer):
@@ -112,50 +85,3 @@ class PasswordResetRequestSerializer(serializers.Serializer):
             raise serializers.ValidationError({'email error': msg}, code='email')
 
         return attrs
-
-
-class SetNewPasswordSerializer(serializers.Serializer):
-    """Serializer for setting new password"""
-    new_password1 = serializers.CharField(
-        style={'input_type': 'password'},
-        required=True
-    )
-    new_password2 = serializers.CharField(
-        style={'input_type': 'password'},
-        required=True
-    )
-
-    class Meta:
-        extra_kwargs = {
-            'new_password1': {'write_only': True, 'min_length': 5},
-            'new_password2': {'write_only': True, 'min_length': 5}
-        }
-
-    def validate(self, attrs):
-        """Validate passwords and check token availability"""
-        uidb64 = self.context.get('request').path.split('/')[-3]
-        token = self.context.get('request').path.split('/')[-2]
-        user_id = force_str(urlsafe_base64_decode(uidb64))
-        user = get_user_model().objects.get(pk=user_id)
-
-        if user:
-            if not PasswordResetTokenGenerator().check_token(user, token):
-                msg = _('Invalid token or expired')
-                raise serializers.ValidationError({'token': msg}, code='token')
-
-            if attrs.get('new_password1') != attrs.get('new_password2'):
-                msg = _('Passwords do not match')
-                raise serializers.ValidationError({'password': msg}, code='password')
-
-            if user.check_password(attrs.get('new_password1')):
-                msg = _('New password is similar to old one')
-                raise serializers.ValidationError({'password': msg}, code='password')
-
-            user.set_password(attrs.get('new_password1'))
-            user.save()
-
-            return user
-
-        else:
-            msg = _('Invalid token or expired')
-            raise serializers.ValidationError({'token': msg}, code='token')

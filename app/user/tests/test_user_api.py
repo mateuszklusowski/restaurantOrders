@@ -1,9 +1,6 @@
 from django.test import TestCase
 from django.urls import reverse
 from django.contrib.auth import get_user_model
-from django.contrib.auth.tokens import PasswordResetTokenGenerator
-from django.utils.encoding import smart_bytes
-from django.utils.http import urlsafe_base64_encode
 
 from rest_framework.test import APIClient
 from rest_framework import status
@@ -189,35 +186,3 @@ class PrivateUserApiTests(TestCase):
         res = self.client.post(PASSWORD_RESET_URL, payload)
 
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
-
-    def test_set_new_password(self):
-        """Test setting a new password with reset token"""
-        payload = {
-            'new_password1': 'testpass123',
-            'new_password2': 'testpass123'
-        }
-
-        token = PasswordResetTokenGenerator().make_token(self.user)
-        uidb64 = urlsafe_base64_encode(smart_bytes(self.user.pk))
-        url = reverse('user:reset-password-confirm', kwargs={'uidb64': uidb64, 'token': token})
-        res = self.client.patch(url, payload)
-
-        self.user.refresh_from_db()
-        self.assertEqual(res.status_code, status.HTTP_200_OK)
-        self.assertTrue(self.user.check_password(payload['new_password1']))
-
-    def test_set_new_password_with_invalid_credientials(self):
-        """Test setting a new password with invalid credientals"""
-        payload = {
-            'new_password1': 'testpass123',
-            'new_password2': 'wrongpassword'
-        }
-
-        token = PasswordResetTokenGenerator().make_token(self.user)
-        uidb64 = urlsafe_base64_encode(smart_bytes(self.user.pk))
-        url = reverse('user:reset-password-confirm', kwargs={'uidb64': uidb64, 'token': token})
-        res = self.client.patch(url, payload)
-
-        self.user.refresh_from_db()
-        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertFalse(self.user.check_password(payload['new_password1']))

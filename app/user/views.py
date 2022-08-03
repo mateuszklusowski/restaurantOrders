@@ -1,21 +1,19 @@
-from rest_framework import generics, status
+from rest_framework import generics, status, permissions
 from rest_framework.response import Response
 
-from django.contrib.auth.tokens import PasswordResetTokenGenerator
-from django.utils.encoding import force_str
-from django.contrib.auth import get_user_model
-from django.utils.http import urlsafe_base64_decode
+from django.contrib.auth import views as auth_views
+from django.urls import reverse_lazy
 
 from .serializers import (UserSerializer,
                           UserPasswordUpdateSerializer,
-                          PasswordResetRequestSerializer,
-                          SetNewPasswordSerializer
+                          PasswordResetRequestSerializer
                           )
 
 
 class CreateUserView(generics.CreateAPIView):
     """Create a new user in the system"""
     serializer_class = UserSerializer
+    permission_classes = (permissions.AllowAny,)
 
 
 class UserDetailView(generics.RetrieveAPIView):
@@ -55,6 +53,7 @@ class UserUpdatePassword(generics.UpdateAPIView):
 class PasswordResetRequestView(generics.GenericAPIView):
     """Password reset request view"""
     serializer_class = PasswordResetRequestSerializer
+    permission_classes = (permissions.AllowAny,)
 
     def post(self, request):
         serializer = self.get_serializer(data=request.data)
@@ -66,29 +65,6 @@ class PasswordResetRequestView(generics.GenericAPIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class PasswordResetConfirmView(generics.GenericAPIView):
-    """Setting new password view"""
-    serializer_class = SetNewPasswordSerializer
-
-    def get(self, request, uidb64, token):
-        """Tell user that password reset link is available"""
-
-        user_id = force_str(urlsafe_base64_decode(uidb64))
-        user = get_user_model().objects.get(pk=user_id)
-
-        if not PasswordResetTokenGenerator().check_token(user, token):
-            return Response(
-                {'failed': 'The token has expired.'},
-                status=status.HTTP_200_OK
-            )
-        return Response({'success': 'Enter your new password'})
-
-    def patch(self, request, uidb64, token):
-        """Change password"""
-        serializer = self.get_serializer(data=request.data)
-        if serializer.is_valid():
-            return Response(
-                {'success': 'Password has been reset successfully.'},
-                status=status.HTTP_200_OK
-            )
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+class PasswordResetConfirmView(auth_views.PasswordResetConfirmView):
+    template_name = 'user/password_reset_confirm.html'
+    success_url = reverse_lazy('restaurant:restaurant-list')
