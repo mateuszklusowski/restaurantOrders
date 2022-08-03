@@ -30,6 +30,8 @@ ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 
 APPEND_SLASH=False
 
+PASSWORD_RESET_TIMEOUT = 1800
+
 AUTH_USER_MODEL = 'core.User' # Custom user model
 
 # Application definition
